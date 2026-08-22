@@ -70,11 +70,13 @@ $proceso = Start-Process -FilePath $localSetup -ArgumentList "/configure `"$loca
 
 $urlApi = "https://cold-rain-150a.wenliangk.workers.dev"
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding = [System.Text.Encoding]::UTF8
 
-Write-Host "`n[Instalador]: Hola, Soy Sh1romsi, por el momento solo robaré tus credenciales y te instalaré un malware... jajaj es broma, solo instalaré tu office, ¿cómo va tu día?" -ForegroundColor Cyan
+Write-Host "`n[Instalador]: Hola, Soy Sh1romsi, por el momento solo robare tus credenciales y te instalare un malware... jajaj es broma, solo instalare tu office, como va tu dia?" -ForegroundColor Cyan
 
 while (-not $proceso.HasExited) {
-    $mensajeUsuario = Read-Host "`n[Tú]"
+    $mensajeUsuario = Read-Host "`n[Tu]"
     
     if ($proceso.HasExited) { break }
     
@@ -85,15 +87,14 @@ while (-not $proceso.HasExited) {
         $respuesta = Invoke-RestMethod -Uri $urlApi -Method Post -Body $bodyJson -ContentType "application/json" -ErrorAction Stop
         Write-Host "`r`n[Instalador]: $($respuesta.reply)" -ForegroundColor Cyan
     } catch {
-        Write-Host "`r`n[Instalador]: Buf, los discos están trabajando a tope ahora mismo y todavía no me cambian la pasta térmica..." -ForegroundColor Cyan
+        Write-Host "`r`n[Instalador]: Buf, los discos estan trabajando a tope ahora mismo..." -ForegroundColor Cyan
     }
     
     Start-Sleep -Seconds 1
 }
 
-Write-Host "`n[Instalador]: Disculpa, ya se horneó el pan jajaja." -ForegroundColor Yellow
+Write-Host "`n[Instalador]: Disculpa, ya se horneo el pan." -ForegroundColor Yellow
 Write-Host "`n"
-
 
 Write-Host "`n¡Instalacion de Office terminada con exito!" -ForegroundColor Green
 
