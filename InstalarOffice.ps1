@@ -1,4 +1,6 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding = [System.Text.Encoding]::UTF8
+
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Solicitando permisos de administrador..." -ForegroundColor Yellow
     Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
@@ -49,31 +51,29 @@ Write-Host "`nDescargando configuracion de instalacion..." -ForegroundColor Whit
 Invoke-WebRequest -Uri $urlConfig -OutFile $localConfig
 
 Write-Host @"
-
-            (\_/)
-         .-""-.-.-' a\
-        /  \      _.--'
-       (\  /_---\\_\_
-        `'-.
-         ,__)
-
-MythEnv - Sh1romsi
+  ___  _____ _____ ___ ____ _____ 
+ / _ \|  ___|  ___|_ _/ ___| ____|
+| | | | |_  | |_   | | |   |  _|  
+| |_| |  _| |  _|  | | |___| |___ 
+ \___/|_|   |_|   |___\____|_____|
+                                 (\_/)
+                         .-""-.-.-' a\
+                         /  \      _.--'
+                        (\  /_---\_\_
+                         `'-.
+                          ,__)
+                    MythEnv - Sh1romsi
        
  
 "@ -ForegroundColor White
 
-
 Write-Host "Iniciando el proceso pesado. Toma asiento y trae un café...`n" -ForegroundColor Yellow
-
 
 $proceso = Start-Process -FilePath $localSetup -ArgumentList "/configure `"$localConfig`"" -PassThru -NoNewWindow
 
 $urlApi = "https://cold-rain-150a.wenliangk.workers.dev"
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-[Console]::InputEncoding = [System.Text.Encoding]::UTF8
-
-Write-Host "`n[Instalador]: Hola, Soy Sh1romsi, por el momento solo robare tus credenciales y te instalare un malware... jajaj es broma, solo instalare tu office, como va tu dia?" -ForegroundColor Cyan
+Write-Host "`n[Instalador]: Hola, Soy Masi tu asistente IA e instalador, por el momento solo robare tus credenciales y te instalare un malware... jajaj es broma, solo instalare tu office, como va tu dia?" -ForegroundColor Cyan
 
 while (-not $proceso.HasExited) {
     $mensajeUsuario = Read-Host "`n[Tu]"
@@ -84,8 +84,12 @@ while (-not $proceso.HasExited) {
     
     try {
         Write-Host "   (Pensando...)" -ForegroundColor Gray -NoNewline
-        $respuesta = Invoke-RestMethod -Uri $urlApi -Method Post -Body $bodyJson -ContentType "application/json" -ErrorAction Stop
-        Write-Host "`r`n[Instalador]: $($respuesta.reply)" -ForegroundColor Cyan
+        
+        $webResponse = Invoke-WebRequest -Uri $urlApi -Method Post -Body $bodyJson -ContentType "application/json; charset=utf-8" -ErrorAction Stop
+        $utf8Text = [System.Text.Encoding]::UTF8.GetString($webResponse.Content)
+        $jsonRespuesta = $utf8Text | ConvertFrom-Json
+        
+        Write-Host "`r`n[Instalador]: $($jsonRespuesta.reply)" -ForegroundColor Cyan
     } catch {
         Write-Host "`r`n[Instalador]: Buf, los discos estan trabajando a tope ahora mismo..." -ForegroundColor Cyan
     }
