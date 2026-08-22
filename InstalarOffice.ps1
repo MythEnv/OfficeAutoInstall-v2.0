@@ -1,3 +1,4 @@
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Solicitando permisos de administrador..." -ForegroundColor Yellow
     Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
@@ -25,7 +26,7 @@ if ($installedOffice) {
     Write-Host "`n[!] ATENCION: Se detectaron las siguientes instalaciones previas:" -ForegroundColor Yellow
     $installedOffice | ForEach-Object { Write-Host "  - $($_.DisplayName)" -ForegroundColor Red }
     
-    $respuesta = Read-Host "`n¿Deseas desinstalar esto completamente antes de continuar? (S/N)"
+    $respuesta = Read-Host "`n¿Deseas desinstalar esto completamente antes de continuar (Tienes que hacerlo para poder continuar)? (S/N)"
     
     if ($respuesta -match "^[sS]") {
         Write-Host "`nLimpiando instalaciones previas. Esto tomara unos minutos, espera..." -ForegroundColor Yellow
@@ -38,7 +39,7 @@ if ($installedOffice) {
         Write-Host "Omitiendo desinstalacion..." -ForegroundColor Cyan
     }
 } else {
-    Write-Host "`nNo se detectaron instalaciones previas de Office. Todo limpio." -ForegroundColor Green
+    Write-Host "`nNo se detectaron instalaciones previas de Office, muy bien hiciste tu trabajo. Todo limpio." -ForegroundColor Green
 }
 
 $urlConfig = "https://raw.githubusercontent.com/WenliangK/OfficeAutoInstall/main/configuration.xml"
@@ -62,14 +63,15 @@ MythEnv - Sh1romsi
 "@ -ForegroundColor White
 
 
-Write-Host "Iniciando el proceso pesado. Toma asiento...`n" -ForegroundColor Yellow
+Write-Host "Iniciando el proceso pesado. Toma asiento y trae un café...`n" -ForegroundColor Yellow
 
 
 $proceso = Start-Process -FilePath $localSetup -ArgumentList "/configure `"$localConfig`"" -PassThru -NoNewWindow
 
-$urlApi = "https://cold-rain-150a.wenliangk.workers.dev/"
+$urlApi = "https://cold-rain-150a.wenliangk.workers.dev"
 
-Write-Host "`n[Instalador]: ¡Hey! Mientras descargo y acomodo todos estos archivos... ¿Qué tal va tu día?" -ForegroundColor Cyan
+
+Write-Host "`n[Instalador]: Hola, Soy Sh1romsi, por el momento solo robaré tus credenciales y te instalaré un malware... jajaj es broma, solo instalaré tu office, ¿cómo va tu día?" -ForegroundColor Cyan
 
 while (-not $proceso.HasExited) {
     $mensajeUsuario = Read-Host "`n[Tú]"
@@ -79,18 +81,19 @@ while (-not $proceso.HasExited) {
     $bodyJson = @{ message = $mensajeUsuario } | ConvertTo-Json
     
     try {
+        Write-Host "   (Pensando...)" -ForegroundColor Gray -NoNewline
         $respuesta = Invoke-RestMethod -Uri $urlApi -Method Post -Body $bodyJson -ContentType "application/json" -ErrorAction Stop
-        
-        Write-Host "`n[Instalador]: $($respuesta.reply)" -ForegroundColor Cyan
+        Write-Host "`r`n[Instalador]: $($respuesta.reply)" -ForegroundColor Cyan
     } catch {
-        Write-Host "`n[Instalador]: Buf, los discos están trabajando a tope ahora mismo..." -ForegroundColor Cyan
+        Write-Host "`r`n[Instalador]: Buf, los discos están trabajando a tope ahora mismo y todavía no me cambian la pasta térmica..." -ForegroundColor Cyan
     }
-
+    
     Start-Sleep -Seconds 1
 }
 
-Write-Host "`n[Instalador]: Disculpa, ya se horneo el pan." -ForegroundColor Yellow
+Write-Host "`n[Instalador]: Disculpa, ya se horneó el pan jajaja." -ForegroundColor Yellow
 Write-Host "`n"
+
 
 Write-Host "`n¡Instalacion de Office terminada con exito!" -ForegroundColor Green
 
