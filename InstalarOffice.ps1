@@ -47,8 +47,46 @@ $localConfig = "$tempDir\configuration.xml"
 Write-Host "`nDescargando configuracion de instalacion..." -ForegroundColor White
 Invoke-WebRequest -Uri $urlConfig -OutFile $localConfig
 
-Write-Host "`nInstalando Office. Aparecera la ventana de carga, por favor espera..." -ForegroundColor Yellow
-Start-Process -FilePath $localSetup -ArgumentList "/configure `"$localConfig`"" -Wait -NoNewWindow
+Write-Host @"
+
+  ___  _____ _____ ___ ____ _____ 
+ / _ \|  ___|  ___|_ _/ ___| ____|
+| | | | |_  | |_   | | |   |  _|  
+| |_| |  _| |  _|  | | |___| |___ 
+ \___/|_|   |_|   |___\____|_____|
+                       by Sh1romsi
+ 
+"@ -ForegroundColor Cyan
+
+
+Write-Host "Iniciando el proceso pesado. Toma asiento...`n" -ForegroundColor Yellow
+
+$proceso = Start-Process -FilePath $localSetup -ArgumentList "/configure `"$localConfig`"" -PassThru -NoNewWindow
+
+$mensajes = @(
+    "Convenciendo a Excel de que 1+1 es 2...",
+    "Ruteando el audio de las notificaciones...",
+    "Asegurando que Word consuma menos recursos que una partida de Lol...",
+    "Meditando con Piero Picon mientras Microsoft trabaja...",
+    "Peleando por el loot en Pisos Picados para pagar la licencia...",
+    "Calculando el espacio en el NAS para guardar tus PDFs...",
+    "Descargando mas RAM de internet para que no explote la PC...",
+    "Si esto tarda mucho, echale la culpa a tu proovedor de internet..."
+)
+
+$contador = 0
+while (-not $proceso.HasExited) {
+    $mensajeActual = $mensajes[$contador % $mensajes.Count]
+    Write-Host "   -> $mensajeActual" -ForegroundColor Magenta
+    
+    for ($i = 0; $i -lt 6; $i++) {
+        if ($proceso.HasExited) { break }
+        Start-Sleep -Seconds 1
+    }
+    $contador++
+}
+
+Write-Host "`n¡Instalacion de Office terminada con exito!" -ForegroundColor Green
 
 Write-Host "`nLimpiando archivos temporales..." -ForegroundColor White
 Remove-Item -Path $tempDir -Recurse -Force
