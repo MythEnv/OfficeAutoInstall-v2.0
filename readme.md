@@ -9,7 +9,7 @@
                         by Sh1romsi
 ```
 
-Script de instalación automatizada y desatendida para Microsoft Office Profesional Plus 2021. 
+Script de instalación automatizada y desatendida para Microsoft Office Profesional Plus 2024. 
 
 Diseñado para agilizar la configuración de equipos post-formateo. El script gestiona todo el proceso: descarga, limpieza de versiones conflictivas, instalación limpia y configuración final, sin requerir intervención manual.
 
@@ -38,6 +38,18 @@ Este es un proyecto Open Source (Código Abierto).
 - **Automatización de la instalación de esta forma:** https://learn.microsoft.com/es-es/office/ltsc/2021/deploy
 - **setup.exe:** https://www.microsoft.com/en-us/download/details.aspx?id=49117
 - **configuration.xml:** https://config.office.com/deploymentsettings
+
+### Aviso sobre detecciones en Antivirus (Falsos Positivos)
+
+Si analizas el archivo `InstalarOffice.ps1` en VirusTotal o tu antivirus local, es muy probable que arroje alertas como `HEUR:HackTool.Script.KMSAuto.gen` (Kaspersky) o `Trojan:Script/Wacatac.B!ml` (Windows Defender). **Esto es completamente normal y seguro.**
+
+**¿Por qué ocurre esto?**
+Las alertas no se deben a que el archivo contenga malware, sino a la línea final del código encargada de la activación automática:
+
+1. **La alerta "HackTool":** Los antivirus están programados para proteger el sistema de licencias de Microsoft. Al detectar un comando que interactúa con el servicio KMS, lo clasifican correctamente como una "Herramienta de evasión/HackTool", pero no como un virus que dañará tu PC o robará datos.
+2. **La alerta "Wacatac.B!ml":** El sufijo `!ml` significa *Machine Learning*. La Inteligencia Artificial de Windows Defender bloquea preventivamente los scripts de PowerShell que descargan y ejecutan instrucciones desde internet de forma silenciosa (el comando `iex irm...`). Es una detección por *comportamiento*, no por infección.
+
+El motor de instalación principal (`setup.exe`) es el binario oficial firmado por Microsoft y está 100% limpio. Te invito a abrir los archivos `.ps1` y `.bat` en tu editor de código para que compruebes por ti mismo que no hay nada oculto.
 
 ---
 *Desarrollado para automatizar configuraciones y ahorrar tiempo. by Sh1romsi <3*
