@@ -1,14 +1,19 @@
 # Office AutoInstall
 
 ```text
-              (\_/)
-      .-""-.-.-' a\
-     /  \      _.--'
-    (\  /_---\\_\_
-     `'-.
-      ,__)
+  ___  _____ _____ ___ ____ _____ 
+ / _ \|  ___|  ___|_ _/ ___| ____|
+| | | | |_  | |_   | | |   |  _|  
+| |_| |  _| |  _|  | | |___| |___ 
+ \___/|_|   |_|   |___\____|_____|
+                                 (\_/)
+                         .-""-.-.-' a\
+                         /  \      _.--'
+                        (\  /_---\_\_
+                         `'-.
+                          ,__)
 
-MythEnv - Sh1romsi
+        MythEnv - Sh1romsi
 ```
 
 Script de instalación automatizada y desatendida para Microsoft Office Profesional Plus 2024. 
