@@ -49,12 +49,12 @@ Invoke-WebRequest -Uri $urlConfig -OutFile $localConfig
 
 Write-Host @"
 
-              (\_/)
-      .-""-.-.-' a\
-     /  \      _.--'
-    (\  /_---\\_\_
-     `'-.
-      ,__)
+            (\_/)
+         .-""-.-.-' a\
+        /  \      _.--'
+       (\  /_---\\_\_
+        `'-.
+         ,__)
 
 MythEnv - Sh1romsi
        
@@ -67,44 +67,29 @@ Write-Host "Iniciando el proceso pesado. Toma asiento...`n" -ForegroundColor Yel
 
 $proceso = Start-Process -FilePath $localSetup -ArgumentList "/configure `"$localConfig`"" -PassThru -NoNewWindow
 
-$faseChat = 1
+$urlApi = "https://cold-rain-150a.wenliangk.workers.dev/"
+
+Write-Host "`n[Instalador]: ¡Hey! Mientras descargo y acomodo todos estos archivos... ¿Qué tal va tu día?" -ForegroundColor Cyan
 
 while (-not $proceso.HasExited) {
-    if ($faseChat -eq 1) {
-        Start-Sleep -Seconds 2
-        Write-Host "`n[Instalador]: Oye, ya que estamos aqui esperando que termine esto... ¿que tal todo? ¿Como va tu dia?" -ForegroundColor Cyan
-        $null = Read-Host "[Tu]"
+    $mensajeUsuario = Read-Host "`n[Tú]"
+    
+    if ($proceso.HasExited) { break }
+    
+    $bodyJson = @{ message = $mensajeUsuario } | ConvertTo-Json
+    
+    try {
+        $respuesta = Invoke-RestMethod -Uri $urlApi -Method Post -Body $bodyJson -ContentType "application/json" -ErrorAction Stop
         
-        Start-Sleep -Seconds 1
-        Write-Host "`n[Instalador]: Entiendo... Yo la verdad he estado pasando por unos dias un poco pesados ultimamente." -ForegroundColor Cyan
-        Start-Sleep -Seconds 2
-        Write-Host "[Instalador]: Pero bueno, tu sabes como es esto. Ya mejorara todo, a veces toca aguantar un poco nomas." -ForegroundColor Cyan
-        $faseChat++
+        Write-Host "`n[Instalador]: $($respuesta.reply)" -ForegroundColor Cyan
+    } catch {
+        Write-Host "`n[Instalador]: Buf, los discos están trabajando a tope ahora mismo..." -ForegroundColor Cyan
     }
-    elseif ($faseChat -eq 2) {
-        Start-Sleep -Seconds 5
-        if ($proceso.HasExited) { break }
-        Write-Host "`n[Instalador]: Ojala te des un tiempo para relajarte luego. ¿Que andas haciendo para distraerte, algun juego, leyendo algo?" -ForegroundColor Cyan
-        $null = Read-Host "[Tu]"
-        
-        Start-Sleep -Seconds 1
-        Write-Host "`n[Instalador]: Suena bien. Yo aqui sigo acomodando los archivos de Word y Excel jaja. Ya casi queda esto." -ForegroundColor Cyan
-        $faseChat++
-    }
-    elseif ($faseChat -eq 3) {
-        Start-Sleep -Seconds 6
-        if ($proceso.HasExited) { break }
-        Write-Host "`n[Instalador]: Por cierto, si ves que me quedo callado es porque estoy concentrado usando el disco duro. Tu tranquilo." -ForegroundColor Cyan
-        $faseChat++
-    }
-    else {
-        Write-Host "." -NoNewline -ForegroundColor White
-        for ($i = 0; $i -lt 3; $i++) {
-            if ($proceso.HasExited) { break }
-            Start-Sleep -Seconds 1
-        }
-    }
+
+    Start-Sleep -Seconds 1
 }
+
+Write-Host "`n[Instalador]: Disculpa, ya se horneo el pan." -ForegroundColor Yellow
 Write-Host "`n"
 
 Write-Host "`n¡Instalacion de Office terminada con exito!" -ForegroundColor Green
