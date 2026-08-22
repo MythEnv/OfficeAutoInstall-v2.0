@@ -102,14 +102,13 @@ while (-not $proceso.HasExited) {
     
     $bodyJson = @{ message = $mensajeUsuario } | ConvertTo-Json
     
-    try {
+  try {
         Write-Host "   (Pensando...)" -ForegroundColor Gray -NoNewline
         
-        $webResponse = Invoke-WebRequest -Uri $urlApi -Method Post -Body $bodyJson -ContentType "application/json; charset=utf-8" -ErrorAction Stop
-        $utf8Text = [System.Text.Encoding]::UTF8.GetString($webResponse.Content)
-        $jsonRespuesta = $utf8Text | ConvertFrom-Json
+        # Usamos Invoke-RestMethod directamente, ya que Cloudflare responde correctamente con JSON
+        $respuesta = Invoke-RestMethod -Uri $urlApi -Method Post -Body $bodyJson -ContentType "application/json; charset=utf-8" -ErrorAction Stop
         
-        Write-Host "`r`n[Instalador]: $($jsonRespuesta.reply)" -ForegroundColor Cyan
+        Write-Host "`r`n[Instalador]: $($respuesta.reply)" -ForegroundColor Cyan
     } catch {
         Write-Host "`r`n[Instalador]: Buf, los discos estan trabajando a tope ahora mismo..." -ForegroundColor Cyan
     }
