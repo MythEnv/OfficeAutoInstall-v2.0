@@ -34,10 +34,10 @@ Este es un proyecto Open Source (Código Abierto).
 
 - **Auditable:** Puedes abrir cualquiera de los archivos (`.ps1`, `.bat`, `.xml`) con el Bloc de notas o VS Code para verificar su contenido. No hay código ofuscado.
 - **Binarios limpios:** El archivo `setup.exe` incluido es la herramienta oficial firmada digitalmente por Microsoft. Puedes subirlo a [VirusTotal](https://www.virustotal.com/) y comprobar que está libre de malware (0 detecciones).
-- **Instalación:*
-    Automatización de la instalación de esta forma: https://learn.microsoft.com/es-es/office/ltsc/2021/deploy
-    setup.exe: https://www.microsoft.com/en-us/download/details.aspx?id=49117
-    configuration.xml: https://config.office.com/deploymentsettings
+- **Instalación:**
+    **Automatización de la instalación de esta forma:** https://learn.microsoft.com/es-es/office/ltsc/2021/deploy
+    **setup.exe:** https://www.microsoft.com/en-us/download/details.aspx?id=49117
+    **configuration.xml:** https://config.office.com/deploymentsettings
 
 ---
 *Desarrollado para automatizar configuraciones y ahorrar tiempo.*
