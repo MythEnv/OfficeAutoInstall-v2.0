@@ -65,10 +65,10 @@ $proceso = Start-Process -FilePath $localSetup -ArgumentList "/configure `"$loca
 
 $mensajes = @(
     "Convenciendo a Excel de que 1+1 es 2...",
-    "Ruteando el audio de las notificaciones...",
+    "Configurando PowerPoint para que no se quede dormido durante la presentacion...",
     "Asegurando que Word consuma menos recursos que una partida de Lol...",
-    "Meditando con Piero Picon mientras Microsoft trabaja...",
-    "Peleando por el loot en Pisos Picados para pagar la licencia...",
+    "Sabes a veces ne siento un poco cansado, pero no me rindo...",
+    "Prendiendo live en tiktok para que veas como se instala Office...",
     "Calculando el espacio en el NAS para guardar tus PDFs...",
     "Descargando mas RAM de internet para que no explote la PC...",
     "Si esto tarda mucho, echale la culpa a tu proovedor de internet..."
