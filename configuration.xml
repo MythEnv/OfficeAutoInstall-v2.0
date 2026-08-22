@@ -1,4 +1,5 @@
 <Configuration ID="bab65ecd-451e-4e80-81ab-70c4c4ebffe1">
+  <Display Level="Full" AcceptEULA="TRUE" />
   <Add OfficeClientEdition="64" Channel="PerpetualVL2021">
     <Product ID="ProPlus2021Volume" PIDKEY="FXYTK-NJJ8C-GB6DW-3DYQT-6F7TH">
       <Language ID="es-es" />
