@@ -40,5 +40,5 @@ Este es un proyecto Open Source (Código Abierto).
 - **configuration.xml:** https://config.office.com/deploymentsettings
 
 ---
-*Desarrollado para automatizar configuraciones y ahorrar tiempo.*
-                                                     by Sh1romsi
+*Desarrollado para automatizar configuraciones y ahorrar tiempo. by Sh1romsi <3*
+                                            
