@@ -32,7 +32,7 @@ Diseñado para agilizar la configuración de equipos post-formateo. El script ge
 - **Descarga Oficial:** Utiliza la herramienta oficial de despliegue de Microsoft (ODT).
 - **Ligero y Limpio:** Descarga e instala solo lo necesario. Elimina automáticamente todos los archivos temporales al terminar.
 
-## Cómo usarlo
+## Cómo usarlo (También puedes usar forma directa de arriba)
 
 1. Ve a la parte superior de este repositorio, haz clic en el botón verde **`<> Code`** y selecciona **`Download ZIP`**.
 2. Extrae el archivo `.zip` en tu computadora.
