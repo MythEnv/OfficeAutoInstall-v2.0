@@ -1,12 +1,21 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::InputEncoding = [System.Text.Encoding]::UTF8
 
+# Mensaje de advertencia inicial estilo sysadmin
+Clear-Host
+Write-Host "==================================================================" -ForegroundColor Red
+Write-Host "  [!] ADVERTENCIA: No te asustes, esto es parte del proceso..." -ForegroundColor Yellow
+Write-Host "  [!] ¡TIENES QUE LEER EL README ANTES DE EJECUTAR ESTO!" -ForegroundColor Red
+Write-Host "==================================================================" -ForegroundColor Red
+Start-Sleep -Seconds 3
+
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Solicitando permisos de administrador..." -ForegroundColor Yellow
+    Write-Host "`nSolicitando permisos de administrador..." -ForegroundColor Yellow
     Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
     exit
 }
 
+# Funcion para efecto de escritura tipo videojuego (RPG)
 function Write-LoreText {
     param([string]$Text, [int]$Delay = 25, [ConsoleColor]$Color = "Yellow")
     foreach ($char in $Text.ToCharArray()) {
@@ -14,6 +23,80 @@ function Write-LoreText {
         Start-Sleep -Milliseconds $Delay
     }
     Write-Host ""
+}
+
+# Funcion del minijuego Snake en la consola
+function Start-ConsoleSnake {
+    Clear-Host
+    $width = 30
+    $height = 15
+    $snake = @(,[PSCustomObject]@{X=10;Y=5}, [PSCustomObject]@{X=9;Y=5}, [PSCustomObject]@{X=8;Y=5})
+    $dir = "RIGHT"
+    $food = [PSCustomObject]@{X = Get-Random -Minimum 1 -Maximum ($width - 1); Y = Get-Random -Minimum 1 -Maximum ($height - 1)}
+    $score = 0
+    $speed = 100
+
+    while ($true) {
+        if ([Console]::KeyAvailable) {
+            $key = [Console]::ReadKey($true)
+            switch ($key.Key) {
+                "LeftArrow"  { if ($dir -ne "RIGHT") { $dir = "LEFT" } }
+                "RightArrow" { if ($dir -ne "LEFT")  { $dir = "RIGHT" } }
+                "UpArrow"    { if ($dir -ne "DOWN")  { $dir = "UP" } }
+                "DownArrow"  { if ($dir -ne "UP")    { $dir = "DOWN" } }
+                "Escape"     { return }
+            }
+        }
+
+        $head = $snake[0]
+        $newHead = [PSCustomObject]@{X=$head.X; Y=$head.Y}
+        switch ($dir) {
+            "LEFT"  { $newHead.X-- }
+            "RIGHT" { $newHead.X++ }
+            "UP"    { $newHead.Y-- }
+            "DOWN"  { $newHead.Y++ }
+        }
+
+        if ($newHead.X -lt 0 -or $newHead.X -ge $width -or $newHead.Y -lt 0 -or $newHead.Y -ge $height) { break }
+        foreach ($segment in $snake) { if ($segment.X -eq $newHead.X -and $segment.Y -eq $newHead.Y) { $break = $true; break } }
+        if ($break) { break }
+
+        $snake = @($newHead) + $snake[0..($snake.Length - 2)]
+
+        if ($newHead.X -eq $food.X -and $newHead.Y -eq $food.Y) {
+            $score += 10
+            $snake += $snake[-1]
+            $food = [PSCustomObject]@{X = Get-Random -Minimum 1 -Maximum ($width - 1); Y = Get-Random -Minimum 1 -Maximum ($height - 1)}
+        }
+
+        $output = "Puntaje: $score | Flechas: Moverse | ESC: Volver al Chat con Masi`n"
+        for ($y = 0; $y -lt $height; $y++) {
+            $line = ""
+            for ($x = 0; $x -lt $width; $x++) {
+                if ($x -eq 0 -or $x -eq ($width - 1) -or $y -eq 0 -or $y -eq ($height - 1)) {
+                    $line += "#"
+                } elseif ($x -eq $food.X -and $y -eq $food.Y) {
+                    $line += "@"
+                } else {
+                    $isSnake = $false
+                    foreach ($segment in $snake) {
+                        if ($segment.X -eq $x -and $segment.Y -eq $y) { $isSnake = $true; break }
+                    }
+                    if ($isSnake) { $line += "O" } else { $line += " " }
+                }
+            }
+            $output += $line + "`n"
+        }
+        [Console]::SetCursorPosition(0, 0)
+        [Console]::Write($output)
+        Start-Sleep -Milliseconds $speed
+    }
+
+    Clear-Host
+    Write-Host "`n¡Juego pausado o terminado! Tu puntaje fue: $score" -ForegroundColor Yellow
+    Write-Host "Volviendo al instalador y al chat con Masi..." -ForegroundColor Cyan
+    Start-Sleep -Seconds 2
+    Clear-Host
 }
 
 Write-Host "==========================================" -ForegroundColor Cyan
@@ -94,18 +177,25 @@ $proceso = Start-Process -FilePath $localSetup -ArgumentList "/configure `"$loca
 $urlApi = "https://cold-rain-150a.wenliangk.workers.dev"
 
 Write-Host "`n[Instalador]: Hola, Soy Masi tu asistente IA e instalador, por el momento solo robare tus credenciales y te instalare un malware... jajaj es broma, solo instalare tu office, como va tu dia?" -ForegroundColor Cyan
+Write-Host "*(Tip: Escribe 'snake' para jugar a la serpiente o charla normalmente con Masi)*" -ForegroundColor DarkGray
 
 while (-not $proceso.HasExited) {
     $mensajeUsuario = Read-Host "`n[Tu]"
     
     if ($proceso.HasExited) { break }
     
+    # Si el usuario quiere jugar al Snake
+    if ($mensajeUsuario -eq "snake") {
+        Start-ConsoleSnake
+        Write-Host "`n[Instalador]: ¡De vuelta a la realidad! ¿Qué tal la partida? ¿Seguimos charlando con Masi?" -ForegroundColor Cyan
+        continue
+    }
+
     $bodyJson = @{ message = $mensajeUsuario } | ConvertTo-Json
     
-  try {
+    try {
         Write-Host "   (Pensando...)" -ForegroundColor Gray -NoNewline
         
-        # Usamos Invoke-RestMethod directamente, ya que Cloudflare responde correctamente con JSON
         $respuesta = Invoke-RestMethod -Uri $urlApi -Method Post -Body $bodyJson -ContentType "application/json; charset=utf-8" -ErrorAction Stop
         
         Write-Host "`r`n[Instalador]: $($respuesta.reply)" -ForegroundColor Cyan
