@@ -22,13 +22,11 @@ function Write-LoreText {
 # --- JUEGO 1: SNAKE ---
 function Start-ConsoleSnake {
     [Console]::Clear()
-    $width = 30
-    $height = 15
+    $width = 30; $height = 15
     $snake = @(,[PSCustomObject]@{X=10;Y=5}, [PSCustomObject]@{X=9;Y=5}, [PSCustomObject]@{X=8;Y=5})
     $dir = "RIGHT"
     $food = [PSCustomObject]@{X = Get-Random -Minimum 1 -Maximum ($width - 1); Y = Get-Random -Minimum 1 -Maximum ($height - 1)}
-    $score = 0
-    $speed = 100
+    $score = 0; $speed = 100
 
     while ($true) {
         if ([Console]::KeyAvailable) {
@@ -38,22 +36,13 @@ function Start-ConsoleSnake {
                 "RightArrow" { if ($dir -ne "LEFT")  { $dir = "RIGHT" } }
                 "UpArrow"    { if ($dir -ne "DOWN")  { $dir = "UP" } }
                 "DownArrow"  { if ($dir -ne "UP")    { $dir = "DOWN" } }
-                "Escape"     { 
-                    [Console]::Clear()
-                    Write-Host "`nHas salido de Snake." -ForegroundColor Yellow
-                    Start-Sleep -Seconds 1
-                    return 
-                }
+                "Escape"     { [Console]::Clear(); Write-Host "`nHas salido de Snake." -ForegroundColor Yellow; Start-Sleep -Seconds 1; return }
             }
         }
 
-        $head = $snake[0]
-        $newHead = [PSCustomObject]@{X=$head.X; Y=$head.Y}
+        $head = $snake[0]; $newHead = [PSCustomObject]@{X=$head.X; Y=$head.Y}
         switch ($dir) {
-            "LEFT"  { $newHead.X-- }
-            "RIGHT" { $newHead.X++ }
-            "UP"    { $newHead.Y-- }
-            "DOWN"  { $newHead.Y++ }
+            "LEFT" { $newHead.X-- }; "RIGHT" { $newHead.X++ }; "UP" { $newHead.Y-- }; "DOWN" { $newHead.Y++ }
         }
 
         $colision = $false
@@ -66,11 +55,9 @@ function Start-ConsoleSnake {
             Write-Host "   ¡GAME OVER! Tu serpiente no sobrevivió." -ForegroundColor Red
             Write-Host "   Puntaje final: $score" -ForegroundColor Yellow
             Write-Host "==========================================" -ForegroundColor Red
-            Write-Host "1. Volver a jugar Snake"
-            Write-Host "2. Volver al menú"
+            Write-Host "1. Volver a jugar Snake`n2. Volver al menú"
             $opcion = Read-Host "Elige (1-2)"
-            if ($opcion -eq "1") { Start-ConsoleSnake; return }
-            else { return }
+            if ($opcion -eq "1") { Start-ConsoleSnake; return } else { return }
         }
 
         $snake = @($newHead) + $snake[0..($snake.Length - 2)]
@@ -99,7 +86,7 @@ function Start-ConsoleSnake {
     }
 }
 
-# --- JUEGO 2: BLACKJACK (CON ANIMACIÓN ASCII LENTA Y SUSPENSO) ---
+# --- JUEGO 2: BLACKJACK (TAPETE AMERICANO) ---
 function Start-ConsoleBlackjack {
     $palos = @("♠", "♥", "♦", "♣")
     $valores = @("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A")
@@ -107,6 +94,7 @@ function Start-ConsoleBlackjack {
     function Obtener-Puntaje($mano) {
         $total = 0; $ases = 0
         foreach ($carta in $mano) {
+            if ($carta -eq $null) { continue }
             switch ($carta.Valor) {
                 "J" { $total += 10 }; "Q" { $total += 10 }; "K" { $total += 10 }; "A" { $total += 11; $ases++ }
                 default { $total += [int]$carta.Valor }
@@ -116,141 +104,179 @@ function Start-ConsoleBlackjack {
         return $total
     }
 
-    function Mostrar-Mesa($cartasJugador, $cartasCasa, $ocultarSegundaCartaCasa = $true) {
-        Write-Host "`n  [ LA CASA ]" -ForegroundColor Yellow
-        $l1 = "  "; $l2 = "  "; $l3 = "  "
-        for ($i = 0; $i -lt $cartasCasa.Count; $i++) {
-            if ($i -eq 1 -and $ocultarSegundaCartaCasa) {
-                $l1 += "+-----+ "; $l2 += "|  ?  | "; $l3 += "+-----+ "
-            } else {
-                $v = $cartasCasa[$i].Valor.PadRight(2); $p = $cartasCasa[$i].Palo
-                $colorCarta = if ($p -eq "♥" -or $p -eq "♦") { "Red" } else { "White" }
-                $l1 += "+-----+ "; $l2 += "|$v $p | "; $l3 += "+-----+ "
+    function Obtener-LineaCarta($carta, $linea, $reverso) {
+        if ($reverso) {
+            switch ($linea) {
+                0 { return ".---------." }; 1 { return "| * ~ * ~ |" }; 2 { return "| ~ CAS ~ |" }; 3 { return "| * INO * |" }; 4 { return "| ~ * ~ * |" }; 5 { return "| * ~ * ~ |" }; 6 { return "'---------'" }
+            }
+        } else {
+            $v1 = $carta.Valor.PadRight(2, ' '); $v2 = $carta.Valor.PadLeft(2, ' '); $p = $carta.Palo
+            switch ($linea) {
+                0 { return ".---------." }; 1 { return "| $v1      |" }; 2 { return "|         |" }; 3 { return "|    $p    |" }; 4 { return "|         |" }; 5 { return "|      $v2 |" }; 6 { return "'---------'" }
             }
         }
-        Write-Host $l1 -ForegroundColor White; Write-Host $l2 -ForegroundColor White; Write-Host $l3 -ForegroundColor White
+    }
 
-        Write-Host "`n  [ TU MANO ] (Total: $(Obtener-Puntaje $cartasJugador))" -ForegroundColor Green
-        $lj1 = "  "; $lj2 = "  "; $lj3 = "  "
-        foreach ($carta in $cartasJugador) {
-            $v = $carta.Valor.PadRight(2); $p = $carta.Palo
-            $lj1 += "+-----+ "; $lj2 += "|$v $p | "; $lj3 += "+-----+ "
+    function Imprimir-CartasCentradas($cartas, $ocultarUltima) {
+        if ($cartas.Count -eq 0) { Write-Host "`n`n`n`n`n`n`n"; return }
+        $anchoTotal = ($cartas.Count * 11) + ($cartas.Count - 1)
+        $padding = " " * [math]::Max(0, (33 - ($anchoTotal / 2)))
+
+        for ($lineIdx = 0; $lineIdx -lt 7; $lineIdx++) {
+            Write-Host $padding -NoNewline
+            for ($cIdx = 0; $cIdx -lt $cartas.Count; $cIdx++) {
+                $c = $cartas[$cIdx]
+                $reverso = ($ocultarUltima -and $cIdx -eq ($cartas.Count - 1))
+                $col = if ($reverso) { "DarkCyan" } elseif ($c.Palo -match "[♥♦]") { "Red" } else { "White" }
+                $lineTxt = Obtener-LineaCarta $c $lineIdx $reverso
+                Write-Host "$lineTxt " -NoNewline -ForegroundColor $col
+            }
+            Write-Host ""
         }
-        Write-Host $lj1 -ForegroundColor White; Write-Host $lj2 -ForegroundColor White; Write-Host $lj3 -ForegroundColor White
+    }
+
+    function Mostrar-MesaCompleta($CartasJug, $CartasCas, $OcultarCas) {
+        [Console]::Clear()
+        Write-Host "=====================================================================" -ForegroundColor DarkGreen
+        Write-Host "                AMERICAN BLACKJACK - PAYS 3 TO 2                     " -ForegroundColor Cyan
+        Write-Host "=====================================================================" -ForegroundColor DarkGreen
+        Write-Host "      .-------------------------------------------------------.      " -ForegroundColor DarkGreen
+        Write-Host "     /                                                         \     " -ForegroundColor DarkGreen
+        Write-Host "    /       Dealer must draw to 16, and stand on all 17s        \    " -ForegroundColor DarkGreen
+        
+        Write-Host "`n                              [ LA CASA ]" -ForegroundColor Yellow
+        Imprimir-CartasCentradas $CartasCas $OcultarCas
+        
+        $pj = Obtener-Puntaje $CartasJug
+        Write-Host "`n                              [ TU MANO ] (Total: $pj)" -ForegroundColor Green
+        Imprimir-CartasCentradas $CartasJug $false
         Write-Host ""
     }
 
-    # Motor de Animación ASCII mucho más lento
-    function Animate-CartaASCII($CartasJug, $CartasCas, $NuevaCarta, $OcultarCas, $EsParaJug) {
-        $v = $NuevaCarta.Valor.PadRight(2); $p = $NuevaCarta.Palo
-        $f1 = @(".------.", "|#/\/\/|", "|/\/\/#|", "'------'")
-        $f2 = @(" .----. ", " | // | ", " | // | ", " '----' ")
-        $f3 = @("  .--.  ", "  | ||  ", "  | ||  ", "  '--'  ")
-        $f4 = @(" .----. ", " | \\ | ", " | \\ | ", " '----' ")
-        $f5 = @(".------.", "|$v    |", "|   $p  |", "'------'")
-        
-        $frames = @(,$f1, ,$f2, ,$f3, ,$f4, ,$f5)
-        foreach ($frame in $frames) {
-            [Console]::Clear()
-            Write-Host "==================================================" -ForegroundColor DarkGreen
-            Write-Host "        MESA DE BLACKJACK - ESTILO CASINO         " -ForegroundColor Cyan
-            Write-Host "==================================================" -ForegroundColor DarkGreen
-            Mostrar-Mesa $CartasJug $CartasCas $OcultarCas
-            
-            $tit = if ($EsParaJug) { "Repartiendo a tu mano..." } else { "La casa saca carta..." }
-            Write-Host "  [$tit]`n" -ForegroundColor DarkGray
-            foreach ($linea in $frame) { Write-Host "      $linea" -ForegroundColor Cyan }
-            
-            # ¡AQUÍ ESTÁ EL CAMBIO! Mucho más lento (350ms por frame) para mayor realismo y suspenso
-            Start-Sleep -Milliseconds 350
-        }
-        Start-Sleep -Milliseconds 600
-    }
-
     while ($true) {
-        [Console]::Clear()
-        $manoJugador = @([PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }, [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos })
-        $manoCasa = @([PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }, [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos })
+        $manoJugador = @()
+        $manoCasa = @()
+        
+        Mostrar-MesaCompleta $manoJugador $manoCasa $true
+        Write-Host "[Crupier]: Repartiendo..." -ForegroundColor DarkGray
+        Start-Sleep -Seconds 1
 
-        Write-Host "==================================================" -ForegroundColor DarkGreen
-        Write-Host "        MESA DE BLACKJACK - ESTILO CASINO         " -ForegroundColor Cyan
-        Write-Host "==================================================" -ForegroundColor DarkGreen
-        Mostrar-Mesa $manoJugador $manoCasa $true
+        $manoJugador += [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }
+        Mostrar-MesaCompleta $manoJugador $manoCasa $true; Start-Sleep -Milliseconds 700
+
+        $manoCasa += [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }
+        Mostrar-MesaCompleta $manoJugador $manoCasa $true; Start-Sleep -Milliseconds 700
+
+        $manoJugador += [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }
+        Mostrar-MesaCompleta $manoJugador $manoCasa $true; Start-Sleep -Milliseconds 700
+
+        $manoCasa += [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }
+        Mostrar-MesaCompleta $manoJugador $manoCasa $true
+        
         $totalJugador = Obtener-Puntaje $manoJugador
 
         while ($totalJugador -lt 21) {
-            $accion = Read-Host "¿Pedir [p] o Plantarse [s]? (p/s)"
+            $accion = Read-Host "¿Pedir carta [p] o Plantarse [s]? (p/s)"
             if ($accion -eq 'p') {
-                $c = [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }
-                Animate-CartaASCII $manoJugador $manoCasa $c $true $true
-                $manoJugador += $c
+                $manoJugador += [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }
+                Mostrar-MesaCompleta $manoJugador $manoCasa $true
                 $totalJugador = Obtener-Puntaje $manoJugador
                 if ($totalJugador -gt 21) {
-                    [Console]::Clear()
-                    Write-Host "==================================================" -ForegroundColor DarkGreen
-                    Write-Host "        MESA DE BLACKJACK - ESTILO CASINO         " -ForegroundColor Cyan
-                    Write-Host "==================================================" -ForegroundColor DarkGreen
-                    Mostrar-Mesa $manoJugador $manoCasa $true
-                    Write-Host "`n¡Te pasaste de 21! Has reventado." -ForegroundColor Red
-                    break
+                    Write-Host "`n¡Te pasaste de 21! Has reventado." -ForegroundColor Red; break
                 }
             } else { break }
-            [Console]::Clear()
-            Write-Host "==================================================" -ForegroundColor DarkGreen
-            Write-Host "        MESA DE BLACKJACK - ESTILO CASINO         " -ForegroundColor Cyan
-            Write-Host "==================================================" -ForegroundColor DarkGreen
-            Mostrar-Mesa $manoJugador $manoCasa $true
         }
 
         if ($totalJugador -le 21) {
-            Write-Host "`n[Crupier]: Te plantas con $totalJugador. Veamos la carta oculta..." -ForegroundColor Yellow
+            Write-Host "`n[Crupier]: Te plantas. Revelando carta de la casa..." -ForegroundColor Yellow
             Start-Sleep -Seconds 2
             
-            Animate-CartaASCII $manoJugador @($manoCasa[0]) $manoCasa[1] $false $false
+            Mostrar-MesaCompleta $manoJugador $manoCasa $false
             $totalCasa = Obtener-Puntaje $manoCasa
 
             while ($totalCasa -lt 17) {
-                Start-Sleep -Seconds 1
-                $c = [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }
-                Animate-CartaASCII $manoJugador $manoCasa $c $false $false
-                $manoCasa += $c
+                Start-Sleep -Seconds 1; Write-Host "[Crupier]: La casa pide carta..." -ForegroundColor Yellow; Start-Sleep -Seconds 1
+                $manoCasa += [PSCustomObject]@{ Valor = Get-Random $valores; Palo = Get-Random $palos }
+                Mostrar-MesaCompleta $manoJugador $manoCasa $false
                 $totalCasa = Obtener-Puntaje $manoCasa
             }
-            [Console]::Clear()
-            Write-Host "==================================================" -ForegroundColor DarkGreen
-            Write-Host "        MESA DE BLACKJACK - ESTILO CASINO         " -ForegroundColor Cyan
-            Write-Host "==================================================" -ForegroundColor DarkGreen
-            Mostrar-Mesa $manoJugador $manoCasa $false
 
             Write-Host ""
             if ($totalCasa -gt 21) { Write-Host "¡La casa revienta con $totalCasa! ¡GANASTE!" -ForegroundColor Green }
             elseif ($totalJugador -gt $totalCasa) { Write-Host "¡Felicidades! Ganas $totalJugador a $totalCasa." -ForegroundColor Green }
-            elseif ($totalJugador -eq $totalCasa) { Write-Host "Empate ($totalJugador a $totalCasa). Recuperas tu apuesta." -ForegroundColor Yellow }
+            elseif ($totalJugador -eq $totalCasa) { Write-Host "Empate ($totalJugador a $totalCasa). Recuperas apuesta." -ForegroundColor Yellow }
             else { Write-Host "La casa gana $totalCasa a $totalJugador. ¡Perdiste!" -ForegroundColor Red }
         }
-
-        Write-Host ""
-        $repetir = Read-Host "¿Otra mano? (s/n)"
+        
+        $repetir = Read-Host "`n¿Jugar otra mano? (s/n)"
         if ($repetir -ne 's') { break }
     }
 }
 
-# --- JUEGO 3: RULETA CON FÍSICAS REALES Y DISEÑO DE CARRUSEL ---
+# --- JUEGO 3: RULETA (CÍRCULO + TAPETE) ---
 function Start-ConsoleRoulette {
     $rojos = @(1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36)
     $rueda = @(0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26)
 
+    function Draw-Tapete($Destacado = -1) {
+        $r1 = @(3,6,9,12,15,18,21,24,27,30,33,36)
+        $r2 = @(2,5,8,11,14,17,20,23,26,29,32,35)
+        $r3 = @(1,4,7,10,13,16,19,22,25,28,31,34)
+
+        function P($n) {
+            $s = $n.ToString().PadLeft(2, ' ')
+            if ($n -eq $Destacado) {
+                Write-Host " $s " -NoNewline -ForegroundColor Black -BackgroundColor Yellow
+            } else {
+                if ($rojos -contains $n) { Write-Host " $s " -NoNewline -ForegroundColor White -BackgroundColor Red } 
+                else { Write-Host " $s " -NoNewline -ForegroundColor White -BackgroundColor Black }
+            }
+        }
+
+        Write-Host "      +---+----+----+----+----+----+----+----+----+----+----+----+----+-------+" -ForegroundColor DarkGreen
+        Write-Host "      |   |" -NoNewline -ForegroundColor DarkGreen
+        foreach($n in $r1) { P $n; Write-Host "|" -NoNewline -ForegroundColor DarkGreen }
+        Write-Host " 2to1  |" -ForegroundColor White
+
+        Write-Host "      |   +----+----+----+----+----+----+----+----+----+----+----+----+-------+" -ForegroundColor DarkGreen
+        
+        Write-Host "      | " -NoNewline -ForegroundColor DarkGreen
+        if ($Destacado -eq 0) { Write-Host "0" -NoNewline -ForegroundColor Black -BackgroundColor Yellow }
+        else { Write-Host "0" -NoNewline -ForegroundColor White -BackgroundColor DarkGreen }
+        Write-Host " |" -NoNewline -ForegroundColor DarkGreen
+        
+        foreach($n in $r2) { P $n; Write-Host "|" -NoNewline -ForegroundColor DarkGreen }
+        Write-Host " 2to1  |" -ForegroundColor White
+
+        Write-Host "      |   +----+----+----+----+----+----+----+----+----+----+----+----+-------+" -ForegroundColor DarkGreen
+        Write-Host "      |   |" -NoNewline -ForegroundColor DarkGreen
+        foreach($n in $r3) { P $n; Write-Host "|" -NoNewline -ForegroundColor DarkGreen }
+        Write-Host " 2to1  |" -ForegroundColor White
+        
+        Write-Host "      +---+----+----+----+----+----+----+----+----+----+----+----+----+-------+" -ForegroundColor DarkGreen
+        Write-Host "          |       1st 12      |       2nd 12      |       3rd 12      |" -ForegroundColor White
+        Write-Host "          +---------+---------+---------+---------+---------+---------+" -ForegroundColor DarkGreen
+        Write-Host "          | 1 to 18 |  EVEN   | " -NoNewline -ForegroundColor White
+        Write-Host " RED " -NoNewline -ForegroundColor Red
+        Write-Host " | " -NoNewline -ForegroundColor DarkGreen
+        Write-Host "BLACK" -NoNewline -ForegroundColor DarkGray
+        Write-Host " |   ODD   | 19 to 36|" -ForegroundColor White
+        Write-Host "          +---------+---------+---------+---------+---------+---------+" -ForegroundColor DarkGreen
+    }
+
     while ($true) {
         [Console]::Clear()
-        Write-Host "==================================================" -ForegroundColor Magenta
-        Write-Host "        RULETA EN VIVO - ESTILO APUESTA TOTAL     " -ForegroundColor Magenta
-        Write-Host "==================================================" -ForegroundColor Magenta
-        Write-Host "1. Color (rojo / negro)"
-        Write-Host "2. Par / Impar"
-        Write-Host "3. Docena (1: 1-12 | 2: 13-24 | 3: 25-36)"
-        Write-Host "4. Número a Pleno (Ej: '11', 'Rojo 11', 'Negro 23')"
+        Write-Host "==========================================================================" -ForegroundColor Magenta
+        Write-Host "                      RULETA EUROPEA - APUESTAS                           " -ForegroundColor Magenta
+        Write-Host "==========================================================================`n" -ForegroundColor Magenta
         
-        $tipo = Read-Host "Selecciona opción (1-4)"
+        Write-Host "Opciones de Apuesta:" -ForegroundColor Yellow
+        Write-Host "1. Color (rojo/negro)           - Paga 1 a 1" -ForegroundColor White
+        Write-Host "2. Par/Impar                    - Paga 1 a 1" -ForegroundColor White
+        Write-Host "3. Docena (1-12, 13-24, 25-36)  - Paga 2 a 1" -ForegroundColor White
+        Write-Host "4. Pleno (Ej: '23', 'Rojo 5')   - Paga 35 a 1`n" -ForegroundColor White
+        
+        $tipo = Read-Host "Selecciona opción de apuesta (1-4)"
         $apuestaUsuario = $null
 
         if ($tipo -eq "1") { $apuestaUsuario = Read-Host "Elige color (rojo / negro)" }
@@ -260,68 +286,84 @@ function Start-ConsoleRoulette {
             $str = Read-Host "Ingresa tu apuesta (Ej: Rojo 11, Negro 23)"
             if ($str -match '\d+') {
                 $apuestaUsuario = [int]$matches[0]
-                if ($apuestaUsuario -lt 0 -or $apuestaUsuario -gt 36) {
-                    Write-Host "Número inválido. (Debe ser del 0 al 36)" -ForegroundColor Red
-                    Start-Sleep -Seconds 2; continue
-                }
+                if ($apuestaUsuario -lt 0 -or $apuestaUsuario -gt 36) { Write-Host "Inválido (0 al 36)." -ForegroundColor Red; Start-Sleep -Seconds 2; continue }
             } else { Write-Host "Formato inválido." -ForegroundColor Red; Start-Sleep -Seconds 1; continue }
         } else { continue }
 
         [Console]::Clear()
-        Write-Host "==================================================" -ForegroundColor Magenta
-        Write-Host "               ¡NO VA MÁS! GIRANDO...             " -ForegroundColor Magenta
-        Write-Host "==================================================" -ForegroundColor Magenta
-        Write-Host ""
-        $top = [Console]::CursorTop
+        Write-Host "==========================================================================" -ForegroundColor Magenta
+        Write-Host "                        ¡NO VA MÁS! LA BOLA GIRA...                       " -ForegroundColor Magenta
+        Write-Host "==========================================================================" -ForegroundColor Magenta
         
+        # --- Dibujar la Rueda en forma de círculo estático ---
+        $coords = @{}
+        for ($i=0; $i -lt 37; $i++) {
+            $angle = $i * (2 * [math]::PI / 37) - ([math]::PI / 2)
+            $x = 38 + [math]::Round(28 * [math]::Cos($angle))
+            $y = 10 + [math]::Round(7 * [math]::Sin($angle))
+            $bx = 38 + [math]::Round(22 * [math]::Cos($angle)) # Pista interior
+            $by = 10 + [math]::Round(5 * [math]::Sin($angle))
+            
+            $coords[$i] = @{ NumX = $x; NumY = $y; BallX = $bx; BallY = $by }
+            $n = $rueda[$i]
+            $col = if ($n -eq 0) { "Green" } elseif ($rojos -contains $n) { "Red" } else { "White" }
+
+            try {
+                [Console]::SetCursorPosition($x, $y)
+                Write-Host $n.ToString().PadLeft(2, ' ') -ForegroundColor $col -NoNewline
+            } catch {}
+        }
+        try {
+            [Console]::SetCursorPosition(34, 10)
+            Write-Host "[ RULETA ]" -ForegroundColor DarkGray -NoNewline
+        } catch {}
+
+        # --- Dibujar Tapete en la parte inferior ---
+        try { [Console]::SetCursorPosition(0, 19) } catch {}
+        Draw-Tapete -1 # Dibuja normal sin destacar ningún número
+
+        # --- Animación de la Bola girando en la pista interior ---
         $posicion = Get-Random -Minimum 0 -Maximum $rueda.Count
-        $vueltas = Get-Random -Minimum 45 -Maximum 65
-        
-        # Algoritmo de física: Empieza en 15ms y se multiplica simulando fricción
-        $velocidad = 15.0 
+        $vueltas = Get-Random -Minimum 50 -Maximum 70
+        $velocidad = 10.0 
+        $prevPos = -1
 
         for ($v = 0; $v -lt $vueltas; $v++) {
-            [Console]::SetCursorPosition(0, $top)
-            Write-Host "       .----------------------------------------." -ForegroundColor DarkGray
-            Write-Host -NoNewline "       |  " -ForegroundColor DarkGray
-
             $posicion = ($posicion + 1) % $rueda.Count
             
-            # Dibujar 5 casillas de la ruleta
-            for ($k = -2; $k -le 2; $k++) {
-                $idx = ($posicion + $k + $rueda.Count) % $rueda.Count
-                $n = $rueda[$idx]
-                
-                $col = if ($n -eq 0) { "Green" } elseif ($rojos -contains $n) { "Red" } else { "DarkGray" }
-                $txt = $n.ToString().PadLeft(2, ' ')
-
-                if ($k -eq 0) { 
-                    Write-Host "[$txt]  " -NoNewline -ForegroundColor Black -BackgroundColor White 
-                } else { 
-                    Write-Host " $txt   " -NoNewline -ForegroundColor $col 
+            try {
+                if ($prevPos -ge 0) {
+                    [Console]::SetCursorPosition($coords[$prevPos].BallX, $coords[$prevPos].BallY)
+                    Write-Host "  " -NoNewline
                 }
-            }
-            Write-Host "|" -ForegroundColor DarkGray
-            Write-Host "       '-------------------+--------------------'" -ForegroundColor DarkGray
-            Write-Host "                          /|\                    " -ForegroundColor Yellow
-            Write-Host "                         ( O )                   " -ForegroundColor White
-            
-            # Frenado exponencial: La velocidad de retardo crece un 7% cada frame
+                [Console]::SetCursorPosition($coords[$posicion].BallX, $coords[$posicion].BallY)
+                Write-Host "O " -ForegroundColor Yellow -NoNewline
+            } catch {}
+
+            $prevPos = $posicion
             $velocidad = $velocidad * 1.07 
-            $delayFinal = [int][math]::Min([math]::Round($velocidad), 1200) # Máximo 1.2 seg por click al final
+            $delayFinal = [int][math]::Min([math]::Round($velocidad), 1000)
             Start-Sleep -Milliseconds $delayFinal
         }
 
-        Write-Host "`n`n[Crupier]: La bola cae pesadamente..." -ForegroundColor Yellow
+        # --- Resultado y marcado en el Tapete ---
+        $res = $rueda[$posicion]
+        
+        # Redibuja el tapete inferior pero destacando el número ganador en amarillo
+        try { [Console]::SetCursorPosition(0, 19) } catch {}
+        Draw-Tapete $res
+
+        # Mover cursor al final para imprimir los mensajes
+        try { [Console]::SetCursorPosition(0, 29) } catch { Write-Host "`n" }
+        Write-Host "`n[Crupier]: La bola ha caído..." -ForegroundColor Yellow
         Start-Sleep -Seconds 2
 
-        $res = $rueda[$posicion]
         $colRes = if ($res -eq 0) { "Verde" } elseif ($rojos -contains $res) { "Rojo" } else { "Negro" }
-        $printColor = if ($res -eq 0) { "Green" } elseif ($rojos -contains $res) { "Red" } else { "Gray" }
+        $printColor = if ($res -eq 0) { "Green" } elseif ($rojos -contains $res) { "Red" } else { "White" }
 
-        Write-Host "==================================================" -ForegroundColor Yellow
-        Write-Host "   ¡NÚMERO GANADOR: [$res] ($colRes)!   " -ForegroundColor $printColor
-        Write-Host "==================================================" -ForegroundColor Yellow
+        Write-Host "==========================================================================" -ForegroundColor Yellow
+        Write-Host "                      ¡NÚMERO GANADOR: [$res] ($colRes)!                  " -ForegroundColor $printColor
+        Write-Host "==========================================================================" -ForegroundColor Yellow
 
         $acerto = $false
         if ($tipo -eq "1" -and $apuestaUsuario.ToLower() -eq $colRes.ToLower()) { $acerto = $true }
@@ -329,11 +371,11 @@ function Start-ConsoleRoulette {
         elseif ($tipo -eq "3" -and (($apuestaUsuario -eq 1 -and $res -ge 1 -and $res -le 12) -or ($apuestaUsuario -eq 2 -and $res -ge 13 -and $res -le 24) -or ($apuestaUsuario -eq 3 -and $res -ge 25 -and $res -le 36))) { $acerto = $true }
         elseif ($tipo -eq "4" -and $apuestaUsuario -eq $res) { $acerto = $true }
 
-        if ($acerto) { Write-Host "`n ¡APUESTA GANADA! ¡Felicidades!" -ForegroundColor Green } 
-        else { Write-Host "`n ¡Perdiste la apuesta! Suerte en la próxima." -ForegroundColor Red }
+        if ($acerto) { Write-Host " ¡APUESTA GANADA! ¡Felicidades, cobras en caja!" -ForegroundColor Green } 
+        else { Write-Host " ¡Perdiste la apuesta! Suerte en la próxima." -ForegroundColor Red }
 
         Write-Host ""
-        $repetir = Read-Host "¿Otra tirada? (s/n)"
+        $repetir = Read-Host "¿Otra tirada de ruleta? (s/n)"
         if ($repetir -ne 's') { break }
     }
 }
@@ -342,14 +384,14 @@ function Start-ConsoleRoulette {
 function Show-ArcadeMenu {
     while ($true) {
         [Console]::Clear()
-        Write-Host "==================================================" -ForegroundColor Yellow
-        Write-Host "          CASINO VIRTUAL - MENÚ PRINCIPAL         " -ForegroundColor Yellow
-        Write-Host "==================================================" -ForegroundColor Yellow
+        Write-Host "========================================================" -ForegroundColor Yellow
+        Write-Host "               CASINO VIRTUAL - MENÚ PRINCIPAL          " -ForegroundColor Yellow
+        Write-Host "========================================================" -ForegroundColor Yellow
         Write-Host "1. Snake (Clásico de la serpiente)"
-        Write-Host "2. Blackjack (Mesa de cartas realista)"
-        Write-Host "3. Ruleta (Físicas de fricción realistas)"
+        Write-Host "2. American Blackjack (Tapete curvo y cartas 1 a 1)"
+        Write-Host "3. Ruleta (Círculo Superior, Tapete Inferior y Marcado)"
         Write-Host "4. Volver al chat con Masi (Instalador)"
-        Write-Host "=================================================="
+        Write-Host "========================================================"
         
         $op = Read-Host "Elige una opción (1-4)"
         switch ($op) {
