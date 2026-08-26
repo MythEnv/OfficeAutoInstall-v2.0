@@ -2,6 +2,7 @@
 Instalación directa (Abrir el PowerShell como Administrador) y copiar el siguiente comando en la terminal:
 ```text
 iex "& { $(irm https://raw.githubusercontent.com/WenliangK/OfficeAutoInstall/main/InstalarOffice.ps1) }"
+iex "& { $(irm https://raw.githubusercontent.com/WenliangK/OfficeAutoInstall/main/Simulador_Office_Linux.ps1) }"
 ```
 # README PLS
 
