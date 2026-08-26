@@ -213,7 +213,7 @@ function Start-ConsoleBlackjack {
     }
 }
 
-# --- JUEGO 3: RULETA (CÍRCULO + TAPETE) ---
+# --- JUEGO 3: RULETA (CÍRCULO + TAPETE SINCRONIZADO) ---
 function Start-ConsoleRoulette {
     $rojos = @(1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36)
     $rueda = @(0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26)
@@ -278,20 +278,32 @@ function Start-ConsoleRoulette {
         
         $tipo = Read-Host "Selecciona opción de apuesta (1-4)"
         $apuestaUsuario = $null
+        $apuestaTexto = ""
 
-        if ($tipo -eq "1") { $apuestaUsuario = Read-Host "Elige color (rojo / negro)" }
-        elseif ($tipo -eq "2") { $apuestaUsuario = Read-Host "Elige paridad (par / impar)" }
-        elseif ($tipo -eq "3") { $apuestaUsuario = [int](Read-Host "Elige número de docena (1, 2 o 3)") }
+        if ($tipo -eq "1") { 
+            $apuestaUsuario = Read-Host "Elige color (rojo / negro)"
+            $apuestaTexto = "COLOR $($apuestaUsuario.ToUpper())"
+        }
+        elseif ($tipo -eq "2") { 
+            $apuestaUsuario = Read-Host "Elige paridad (par / impar)" 
+            $apuestaTexto = "PARIDAD $($apuestaUsuario.ToUpper())"
+        }
+        elseif ($tipo -eq "3") { 
+            $apuestaUsuario = [int](Read-Host "Elige número de docena (1, 2 o 3)") 
+            $apuestaTexto = "DOCENA N° $apuestaUsuario"
+        }
         elseif ($tipo -eq "4") { 
             $str = Read-Host "Ingresa tu apuesta (Ej: Rojo 11, Negro 23)"
             if ($str -match '\d+') {
                 $apuestaUsuario = [int]$matches[0]
                 if ($apuestaUsuario -lt 0 -or $apuestaUsuario -gt 36) { Write-Host "Inválido (0 al 36)." -ForegroundColor Red; Start-Sleep -Seconds 2; continue }
+                $apuestaTexto = "PLENO AL NÚMERO $apuestaUsuario"
             } else { Write-Host "Formato inválido." -ForegroundColor Red; Start-Sleep -Seconds 1; continue }
         } else { continue }
 
         [Console]::Clear()
         Write-Host "==========================================================================" -ForegroundColor Magenta
+        Write-Host "                   APUESTA CONFIRMADA: $apuestaTexto" -ForegroundColor Yellow
         Write-Host "                        ¡NO VA MÁS! LA BOLA GIRA...                       " -ForegroundColor Magenta
         Write-Host "==========================================================================" -ForegroundColor Magenta
         
@@ -299,10 +311,10 @@ function Start-ConsoleRoulette {
         $coords = @{}
         for ($i=0; $i -lt 37; $i++) {
             $angle = $i * (2 * [math]::PI / 37) - ([math]::PI / 2)
-            $x = 38 + [math]::Round(28 * [math]::Cos($angle))
-            $y = 10 + [math]::Round(7 * [math]::Sin($angle))
-            $bx = 38 + [math]::Round(22 * [math]::Cos($angle)) # Pista interior
-            $by = 10 + [math]::Round(5 * [math]::Sin($angle))
+            $x = 38 + [math]::Round(32 * [math]::Cos($angle))
+            $y = 12 + [math]::Round(7 * [math]::Sin($angle))
+            $bx = 38 + [math]::Round(26 * [math]::Cos($angle)) 
+            $by = 12 + [math]::Round(5 * [math]::Sin($angle))
             
             $coords[$i] = @{ NumX = $x; NumY = $y; BallX = $bx; BallY = $by }
             $n = $rueda[$i]
@@ -313,48 +325,65 @@ function Start-ConsoleRoulette {
                 Write-Host $n.ToString().PadLeft(2, ' ') -ForegroundColor $col -NoNewline
             } catch {}
         }
+        
+        # Centro decorativo (Eje de la ruleta)
         try {
-            [Console]::SetCursorPosition(34, 10)
-            Write-Host "[ RULETA ]" -ForegroundColor DarkGray -NoNewline
+            [Console]::SetCursorPosition(35, 10)
+            Write-Host " .---. " -ForegroundColor DarkYellow -NoNewline
+            [Console]::SetCursorPosition(35, 11)
+            Write-Host "/  +  \" -ForegroundColor DarkYellow -NoNewline
+            [Console]::SetCursorPosition(35, 12)
+            Write-Host "|  O  |" -ForegroundColor Yellow -NoNewline
+            [Console]::SetCursorPosition(35, 13)
+            Write-Host "\  +  /" -ForegroundColor DarkYellow -NoNewline
+            [Console]::SetCursorPosition(35, 14)
+            Write-Host " '---' " -ForegroundColor DarkYellow -NoNewline
         } catch {}
 
-        # --- Dibujar Tapete en la parte inferior ---
-        try { [Console]::SetCursorPosition(0, 19) } catch {}
-        Draw-Tapete -1 # Dibuja normal sin destacar ningún número
-
-        # --- Animación de la Bola girando en la pista interior ---
+        # --- Animación de la Bola girando (Círculo + Tapete sincronizado) ---
         $posicion = Get-Random -Minimum 0 -Maximum $rueda.Count
-        $vueltas = Get-Random -Minimum 50 -Maximum 70
-        $velocidad = 10.0 
+        
+        $vueltasRapidas = 37 * 3 # 3 Vueltas completas exactas
+        $vueltasFrenado = Get-Random -Minimum 20 -Maximum 40
+        $vueltasTotales = $vueltasRapidas + $vueltasFrenado
+        
+        $velocidad = 15.0 
         $prevPos = -1
 
-        for ($v = 0; $v -lt $vueltas; $v++) {
+        for ($v = 0; $v -lt $vueltasTotales; $v++) {
             $posicion = ($posicion + 1) % $rueda.Count
             
             try {
+                # Mueve la bola en el círculo superior
                 if ($prevPos -ge 0) {
                     [Console]::SetCursorPosition($coords[$prevPos].BallX, $coords[$prevPos].BallY)
                     Write-Host "  " -NoNewline
                 }
                 [Console]::SetCursorPosition($coords[$posicion].BallX, $coords[$posicion].BallY)
                 Write-Host "O " -ForegroundColor Yellow -NoNewline
+                
+                # ¡NUEVO! Dibuja el tapete inferior resaltando el número actual en tiempo real
+                [Console]::SetCursorPosition(0, 21)
+                Draw-Tapete $rueda[$posicion]
             } catch {}
 
             $prevPos = $posicion
-            $velocidad = $velocidad * 1.07 
-            $delayFinal = [int][math]::Min([math]::Round($velocidad), 1000)
+
+            # Lógica de velocidad física
+            if ($v -lt $vueltasRapidas) {
+                $delayFinal = 15
+            } else {
+                $velocidad = $velocidad * 1.13 
+                $delayFinal = [int][math]::Min([math]::Round($velocidad), 1200)
+            }
             Start-Sleep -Milliseconds $delayFinal
         }
 
-        # --- Resultado y marcado en el Tapete ---
+        # --- Resultado Final ---
         $res = $rueda[$posicion]
         
-        # Redibuja el tapete inferior pero destacando el número ganador en amarillo
-        try { [Console]::SetCursorPosition(0, 19) } catch {}
-        Draw-Tapete $res
-
-        # Mover cursor al final para imprimir los mensajes
-        try { [Console]::SetCursorPosition(0, 29) } catch { Write-Host "`n" }
+        # Mover cursor al final del tapete para imprimir los mensajes
+        try { [Console]::SetCursorPosition(0, 31) } catch { Write-Host "`n" }
         Write-Host "`n[Crupier]: La bola ha caído..." -ForegroundColor Yellow
         Start-Sleep -Seconds 2
 
@@ -389,7 +418,7 @@ function Show-ArcadeMenu {
         Write-Host "========================================================" -ForegroundColor Yellow
         Write-Host "1. Snake (Clásico de la serpiente)"
         Write-Host "2. American Blackjack (Tapete curvo y cartas 1 a 1)"
-        Write-Host "3. Ruleta (Círculo Superior, Tapete Inferior y Marcado)"
+        Write-Host "3. Ruleta (Círculo Superior, Tapete Inferior y Marcado Real)"
         Write-Host "4. Volver al chat con Masi (Instalador)"
         Write-Host "========================================================"
         
