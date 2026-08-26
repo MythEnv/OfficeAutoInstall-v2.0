@@ -44,7 +44,7 @@ function Start-ConsoleSnake {
                 "RightArrow" { if ($dir -ne "LEFT")  { $dir = "RIGHT" } }
                 "UpArrow"    { if ($dir -ne "DOWN")  { $dir = "UP" } }
                 "DownArrow"  { if ($dir -ne "UP")    { $dir = "DOWN" } }
-                "Escape"     { return }
+                "Escape"     { return } # Permite salir del juego y volver al chat
             }
         }
 
@@ -69,7 +69,7 @@ function Start-ConsoleSnake {
             $food = [PSCustomObject]@{X = Get-Random -Minimum 1 -Maximum ($width - 1); Y = Get-Random -Minimum 1 -Maximum ($height - 1)}
         }
 
-        $output = "Puntaje: $score | Flechas: Moverse | ESC: Volver al Chat con Masi`n"
+        $output = "Puntaje: $score | Flechas: Moverse | ESC: Salir al chat con Masi`n"
         for ($y = 0; $y -lt $height; $y++) {
             $line = ""
             for ($x = 0; $x -lt $width; $x++) {
@@ -93,8 +93,8 @@ function Start-ConsoleSnake {
     }
 
     Clear-Host
-    Write-Host "`n¡Juego pausado o terminado! Tu puntaje fue: $score" -ForegroundColor Yellow
-    Write-Host "Volviendo al instalador y al chat con Masi..." -ForegroundColor Cyan
+    Write-Host "`n¡Juego terminado! Tu puntaje fue: $score" -ForegroundColor Yellow
+    Write-Host "Volviendo al instalador..." -ForegroundColor Cyan
     Start-Sleep -Seconds 2
     Clear-Host
 }
@@ -176,21 +176,23 @@ $proceso = Start-Process -FilePath $localSetup -ArgumentList "/configure `"$loca
 
 $urlApi = "https://cold-rain-150a.wenliangk.workers.dev"
 
+# --- LA BROMA DE MASI Y EL MENÚ POSTERIOR ---
 Write-Host "`n[Instalador]: Hola, Soy Masi tu asistente IA e instalador, por el momento solo robare tus credenciales y te instalare un malware... jajaj es broma, solo instalare tu office, como va tu dia?" -ForegroundColor Cyan
-Write-Host "*(Tip: Escribe 'snake' para jugar a la serpiente o charla normalmente con Masi)*" -ForegroundColor DarkGray
+Write-Host "*(¿Qué quieres hacer? Escribe 'masi' para seguir charlando conmigo o 'snake' si te aburres y quieres jugar)*" -ForegroundColor DarkGray
 
 while (-not $proceso.HasExited) {
     $mensajeUsuario = Read-Host "`n[Tu]"
     
     if ($proceso.HasExited) { break }
     
-    # Si el usuario quiere jugar al Snake
+    # Si el usuario elige jugar al Snake
     if ($mensajeUsuario -eq "snake") {
         Start-ConsoleSnake
-        Write-Host "`n[Instalador]: ¡De vuelta a la realidad! ¿Qué tal la partida? ¿Seguimos charlando con Masi?" -ForegroundColor Cyan
+        Write-Host "`n[Instalador]: ¡Bien de vuelta! ¿Quieres seguir jugando escribiendo 'snake' o prefieres hablar conmigo escribiendo 'masi'?" -ForegroundColor Cyan
         continue
     }
 
+    # Si escribe masi o cualquier otra cosa, mandamos el mensaje a la IA
     $bodyJson = @{ message = $mensajeUsuario } | ConvertTo-Json
     
     try {
