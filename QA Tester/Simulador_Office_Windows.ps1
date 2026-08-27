@@ -30,21 +30,26 @@ $RutaBase = if ([string]::IsNullOrEmpty($PSScriptRoot)) { (Get-Location).Path } 
 $ModuloIA = Join-Path -Path $RutaBase -ChildPath "MASII\MasiAI.ps1"
 if (Test-Path $ModuloIA) { . $ModuloIA }
 
-# 2. Cargar dinámicamente el Arcade
+# 2. Cargar dinámicamente el Arcade (Corregido para retención de memoria)
 $CarpetaArcade = Join-Path -Path $RutaBase -ChildPath "ArcadeGames"
 if (Test-Path $CarpetaArcade) {
-    Get-ChildItem -Path $CarpetaArcade -Filter "*.ps1" | ForEach-Object { . $_.FullName }
+    # Usamos un bucle foreach nativo en lugar de una tubería para que las funciones no se borren de la memoria
+    $archivosJuegos = Get-ChildItem -Path $CarpetaArcade -Filter "*.ps1"
+    foreach ($juego in $archivosJuegos) {
+        . $juego.FullName
+    }
+    
+    # Verificamos si la carga fue exitosa
     if (Get-Command Show-ArcadeMenu -ErrorAction SilentlyContinue) {
         $JuegosDisponibles = $true
     }
 }
-
 # ========================================================================
 #                    FLUJO PRINCIPAL DE SIMULACIÓN
 # ========================================================================
 
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "   Iniciando Simulador de Office (Windows)" -ForegroundColor Cyan
+Write-Host "  Iniciando Simulador de Office (Windows)" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
 Write-LoreText "Conectando con los servidores para descargar el motor de instalacion..." 25 "White"
