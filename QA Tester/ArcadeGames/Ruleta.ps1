@@ -42,6 +42,7 @@ function Start-ConsoleRoulette {
         Write-Host " | " -NoNewline -ForegroundColor DarkGreen
         Write-Host "BLACK" -NoNewline -ForegroundColor DarkGray
         Write-Host " |   ODD   | 19 to 36|" -ForegroundColor White
+        # -NoNewline crítico al final para evitar saltos de línea destructivos en Windows
         Write-Host "          +---------+---------+---------+---------+---------+---------+" -ForegroundColor DarkGreen -NoNewline
     }
 
@@ -77,25 +78,27 @@ function Start-ConsoleRoulette {
         Write-Host "                        ¡NO VA MÁS! LA BOLA GIRA...                       " -ForegroundColor Magenta
         Write-Host "==========================================================================" -ForegroundColor Magenta
         
+        # Coordenadas comprimidas hacia arriba para evitar el borde inferior de PowerShell
         $coords = @{}
         for ($i=0; $i -lt 37; $i++) {
             $angle = $i * (2 * [math]::PI / 37) - ([math]::PI / 2)
-            $x = 38 + [math]::Round(32 * [math]::Cos($angle)); $y = 12 + [math]::Round(7 * [math]::Sin($angle))
-            $bx = 38 + [math]::Round(26 * [math]::Cos($angle)); $by = 12 + [math]::Round(5 * [math]::Sin($angle))
+            $x = 38 + [math]::Round(28 * [math]::Cos($angle)); $y = 7 + [math]::Round(5 * [math]::Sin($angle))
+            $bx = 38 + [math]::Round(22 * [math]::Cos($angle)); $by = 7 + [math]::Round(3 * [math]::Sin($angle))
             $coords[$i] = @{ NumX = $x; NumY = $y; BallX = $bx; BallY = $by }
             $n = $rueda[$i]
             $col = if ($n -eq 0) { "Green" } elseif ($rojos -contains $n) { "Red" } else { "White" }
             try { [Console]::SetCursorPosition($x, $y); Write-Host $n.ToString().PadLeft(2, ' ') -ForegroundColor $col -NoNewline } catch {}
         }
         try {
-            [Console]::SetCursorPosition(35, 10); Write-Host " .---. " -ForegroundColor DarkYellow -NoNewline
-            [Console]::SetCursorPosition(35, 11); Write-Host "/  +  \" -ForegroundColor DarkYellow -NoNewline
-            [Console]::SetCursorPosition(35, 12); Write-Host "|  O  |" -ForegroundColor Yellow -NoNewline
-            [Console]::SetCursorPosition(35, 13); Write-Host "\  +  /" -ForegroundColor DarkYellow -NoNewline
-            [Console]::SetCursorPosition(35, 14); Write-Host " '---' " -ForegroundColor DarkYellow -NoNewline
+            [Console]::SetCursorPosition(35, 5); Write-Host " .---. " -ForegroundColor DarkYellow -NoNewline
+            [Console]::SetCursorPosition(35, 6); Write-Host "/  +  \" -ForegroundColor DarkYellow -NoNewline
+            [Console]::SetCursorPosition(35, 7); Write-Host "|  O  |" -ForegroundColor Yellow -NoNewline
+            [Console]::SetCursorPosition(35, 8); Write-Host "\  +  /" -ForegroundColor DarkYellow -NoNewline
+            [Console]::SetCursorPosition(35, 9); Write-Host " '---' " -ForegroundColor DarkYellow -NoNewline
         } catch {}
 
-        try { [Console]::SetCursorPosition(0, 21) } catch {}
+        # Tapete posicionado de forma segura en la línea 15
+        try { [Console]::SetCursorPosition(0, 15) } catch {}
         Draw-Tapete -1 
 
         $posicion = Get-Random -Minimum 0 -Maximum $rueda.Count
@@ -109,7 +112,7 @@ function Start-ConsoleRoulette {
             try {
                 if ($prevPos -ge 0) { [Console]::SetCursorPosition($coords[$prevPos].BallX, $coords[$prevPos].BallY); Write-Host "  " -NoNewline }
                 [Console]::SetCursorPosition($coords[$posicion].BallX, $coords[$posicion].BallY); Write-Host "O " -ForegroundColor Yellow -NoNewline
-                [Console]::SetCursorPosition(0, 21); Draw-Tapete $rueda[$posicion]
+                [Console]::SetCursorPosition(0, 15); Draw-Tapete $rueda[$posicion]
             } catch {}
             $prevPos = $posicion
 
@@ -119,7 +122,9 @@ function Start-ConsoleRoulette {
         }
 
         $res = $rueda[$posicion]
-        try { [Console]::SetCursorPosition(0, 31) } catch { Write-Host "`n" }
+        
+        # Resultados renderizados en la línea 24 (Dentro del límite de 30 líneas de Windows)
+        try { [Console]::SetCursorPosition(0, 24) } catch { Write-Host "`n" }
         Write-Host "`n[Crupier]: La bola ha caído..." -ForegroundColor Yellow
         Start-Sleep -Seconds 2
 
