@@ -20,30 +20,63 @@ function Write-LoreText {
 }
 
 # ========================================================================
-#                    AUTO-CARGADOR DE MÓDULOS CROSS-PLATFORM
+#                    AUTO-CARGADOR HÍBRIDO (LOCAL / NUBE)
 # ========================================================================
 
 $JuegosDisponibles = $false
-$RutaBase = if ([string]::IsNullOrEmpty($PSScriptRoot)) { (Get-Location).Path } else { $PSScriptRoot }
+$EjecucionWeb = [string]::IsNullOrEmpty($PSScriptRoot)
 
-# 1. Cargar la IA Masi
-$ModuloIA = Join-Path -Path $RutaBase -ChildPath "MASII\MasiAI.ps1"
-if (Test-Path $ModuloIA) { . $ModuloIA }
+Write-Host "`n[Sistema]: Iniciando rastreo de dependencias..." -ForegroundColor DarkGray
 
-# 2. Cargar dinámicamente el Arcade (Corregido para retención de memoria)
-$CarpetaArcade = Join-Path -Path $RutaBase -ChildPath "ArcadeGames"
-if (Test-Path $CarpetaArcade) {
-    # Usamos un bucle foreach nativo en lugar de una tubería para que las funciones no se borren de la memoria
-    $archivosJuegos = Get-ChildItem -Path $CarpetaArcade -Filter "*.ps1"
-    foreach ($juego in $archivosJuegos) {
-        . $juego.FullName
-    }
+if ($EjecucionWeb) {
+    Write-Host "[Sistema]: Ejecución en RAM detectada. Descargando módulos de GitHub..." -ForegroundColor Magenta
     
-    # Verificamos si la carga fue exitosa
-    if (Get-Command Show-ArcadeMenu -ErrorAction SilentlyContinue) {
-        $JuegosDisponibles = $true
+    # 1. Cargar MasiAI desde GitHub
+    try {
+        $iaRaw = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/WenliangK/OfficeAutoInstall/refs/heads/main/OAI/MASII/MasiAI.ps1"
+        Invoke-Expression $iaRaw
+        Write-Host "[Sistema]: Módulo IA [OK]" -ForegroundColor DarkGray
+    } catch { Write-Host "[Error]: No se pudo conectar con la IA en la nube." -ForegroundColor Red }
+
+    # 2. Cargar Arcade desde GitHub (Lista explícita)
+    try {
+        $listaJuegos = @("ArcadeMenu.ps1", "Snake.ps1", "Blackjack.ps1", "Ruleta.ps1", "SpaceInvaders.ps1", "Asteroids.ps1")
+        $baseArcade = "https://raw.githubusercontent.com/WenliangK/OfficeAutoInstall/refs/heads/main/OAI/ArcadeGames/"
+        
+        foreach ($juego in $listaJuegos) {
+            $juegoRaw = Invoke-RestMethod -Uri "$baseArcade$juego"
+            Invoke-Expression $juegoRaw
+        }
+        
+        if (Get-Command Show-ArcadeMenu -ErrorAction SilentlyContinue) {
+            $JuegosDisponibles = $true
+            Write-Host "[Sistema]: Módulo Arcade en la nube [OK]" -ForegroundColor DarkGray
+        }
+    } catch { 
+        Write-Host "[Error]: Falló la inyección de los juegos desde la nube." -ForegroundColor Red 
+    }
+
+} else {
+    Write-Host "[Sistema]: Ejecución local detectada. Buscando en carpetas físicas..." -ForegroundColor Magenta
+    $RutaBase = if ($PSScriptRoot) { $PSScriptRoot } else { $PWD.Path }
+    if (-not (Test-Path (Join-Path $RutaBase "ArcadeGames")) -and (Test-Path (Join-Path $RutaBase "QA Tester\ArcadeGames"))) {
+        $RutaBase = Join-Path $RutaBase "QA Tester"
+    }
+
+    $ModuloIA = Join-Path -Path $RutaBase -ChildPath "MASII\MasiAI.ps1"
+    if (Test-Path $ModuloIA) { . "$ModuloIA"; Write-Host "[Sistema]: Módulo IA Local [OK]" -ForegroundColor DarkGray }
+
+    $CarpetaArcade = Join-Path -Path $RutaBase -ChildPath "ArcadeGames"
+    if (Test-Path $CarpetaArcade) {
+        $archivosJuegos = Get-ChildItem -Path $CarpetaArcade -Filter "*.ps1"
+        foreach ($juego in $archivosJuegos) { . "$($juego.FullName)" }
+        if (Get-Command Show-ArcadeMenu -ErrorAction SilentlyContinue) {
+            $JuegosDisponibles = $true
+            Write-Host "[Sistema]: Módulo Arcade Local [OK]" -ForegroundColor DarkGray
+        }
     }
 }
+Write-Host ""
 # ========================================================================
 #                    FLUJO PRINCIPAL DE SIMULACIÓN
 # ========================================================================
